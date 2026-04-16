@@ -2,12 +2,13 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Таблица 200×2 | Жёлтый фон у начала стрелки</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Таблица 200×2 | Прицел (🎯) и Молния (⚡) — мобильная версия</title>
     <style>
         * {
             box-sizing: border-box;
             font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -17,105 +18,115 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 12px;
         }
 
         .app-container {
-            max-width: 1600px;
+            max-width: 100%;
             width: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(3px);
-            border-radius: 2rem;
-            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.3);
-            padding: 1.5rem;
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.25);
+            padding: 0.9rem;
         }
 
         .toolbar {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
             background: #ffffffcc;
-            padding: 12px 20px;
+            padding: 12px 16px;
             border-radius: 60px;
             backdrop-filter: blur(2px);
         }
 
         .btn-group {
             display: flex;
-            gap: 15px;
+            gap: 12px;
+            justify-content: center;
             flex-wrap: wrap;
         }
 
         button {
             border: none;
             font-weight: 600;
-            padding: 10px 24px;
+            padding: 12px 18px;
             border-radius: 60px;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            gap: 6px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 110px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button:active {
+            transform: scale(0.97);
         }
 
         .btn-generate {
             background: #2b7a4b;
             color: white;
         }
-        .btn-generate:hover { background: #1e5e3a; transform: translateY(-2px); }
+        .btn-generate:active { background: #1e5e3a; }
 
         .btn-clear {
             background: #b91c1c;
             color: white;
         }
-        .btn-clear:hover { background: #991b1b; transform: translateY(-2px); }
+        .btn-clear:active { background: #991b1b; }
 
         .stats {
             background: #eef3fc;
-            padding: 5px 18px;
+            padding: 8px 14px;
             border-radius: 40px;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 500;
             color: #155f7c;
             display: flex;
-            align-items: center;
-            gap: 12px;
+            justify-content: center;
+            gap: 16px;
             flex-wrap: wrap;
+            text-align: center;
         }
 
         .hit-percent {
             background: #fff0f0;
-            padding: 4px 16px;
+            padding: 4px 14px;
             border-radius: 40px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.85rem;
             color: #dc2626;
             border: 1px solid #fecaca;
+            white-space: nowrap;
         }
-        .hit-percent span { font-size: 1.2rem; font-weight: 800; }
+        .hit-percent span { font-size: 1rem; font-weight: 800; }
 
         .table-wrapper {
             overflow-x: auto;
             overflow-y: auto;
-            border-radius: 1.25rem;
+            border-radius: 1rem;
             background: white;
-            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
-            margin: 20px 0 0;
-            max-height: 70vh;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 12px 0 0;
+            max-height: 65vh;
             scroll-behavior: smooth;
             position: relative;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
-            min-width: 600px;
+            font-size: 0.75rem;
+            min-width: 500px;
             position: relative;
             background: white;
             z-index: 1;
@@ -125,8 +136,8 @@
             background: #1f3b4c;
             color: white;
             font-weight: 600;
-            padding: 14px 12px;
-            font-size: 0.95rem;
+            padding: 10px 6px;
+            font-size: 0.75rem;
             text-align: center;
             position: sticky;
             top: 0;
@@ -134,22 +145,21 @@
         }
 
         td {
-            padding: 10px 12px;
+            padding: 6px 4px;
             text-align: center;
             border-bottom: 1px solid #e2edf2;
             background-color: #ffffff;
-            transition: background 0.1s;
             position: relative;
         }
-        tr:hover td { background-color: #fef7e0; }
+        tr:active td { background-color: #fef7e0; }
 
         .row-index {
             font-weight: 600;
             background-color: #f8fafc;
             color: #1f4e6e;
-            width: 65px;
+            width: 45px;
             border-right: 1px solid #dee9ef;
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             position: sticky;
             left: 0;
             z-index: 5;
@@ -157,11 +167,11 @@
 
         input[type="number"] {
             width: 100%;
-            max-width: 140px;
-            padding: 9px 10px;
-            font-size: 0.9rem;
+            max-width: 85px;
+            padding: 8px 4px;
+            font-size: 0.75rem;
             text-align: center;
-            border: 2px solid #cbdde6;
+            border: 1.5px solid #cbdde6;
             border-radius: 40px;
             background: white;
             font-weight: 500;
@@ -180,7 +190,7 @@
         }
         input:focus {
             border-color: #f59e0b;
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
         }
         input.valid-input {
             border-color: #2c9a6e;
@@ -195,11 +205,11 @@
             background: #f2f7fc;
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.75rem;
             color: #0f5b7a;
-            padding: 6px 12px;
-            border-radius: 48px;
-            min-width: 85px;
+            padding: 5px 8px;
+            border-radius: 40px;
+            min-width: 60px;
             background: #eef3fa;
             display: inline-block;
             transition: all 0.2s ease;
@@ -209,17 +219,16 @@
         .random-value.highlight-green {
             background: #c6f7d0;
             color: #0a5e2e;
-            box-shadow: 0 0 0 2px #2c9a6e55;
+            box-shadow: 0 0 0 1.5px #2c9a6e;
         }
-        /* Жёлтый фон для ячейки, откуда начинается стрелка */
         .random-value.arrow-start {
             background: linear-gradient(90deg, #fef08a, #fde047);
             color: #854d0e;
         }
 
         .target-icon {
-            font-size: 1.6rem;
-            width: 45px;
+            font-size: 1.2rem;
+            width: 30px;
             text-align: center;
             display: inline-block;
         }
@@ -227,28 +236,28 @@
         .diff-badge {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
-            font-size: 0.9rem;
-            padding: 5px 10px;
+            font-size: 0.7rem;
+            padding: 4px 6px;
             border-radius: 32px;
             display: inline-block;
-            min-width: 60px;
+            min-width: 45px;
             text-align: center;
             transition: all 0.2s ease;
         }
         .diff-badge.horizontal-hit {
             background: #86efac;
             color: #166534;
-            box-shadow: 0 0 0 2px #2c9a6e;
-            border: 2px solid #2c9a6e;
+            box-shadow: 0 0 0 1.5px #2c9a6e;
+            border: 1px solid #2c9a6e;
         }
         .diff-badge.vertical-hit {
             background: #fde047;
             color: #854d0e;
-            box-shadow: 0 0 0 2px #eab308;
+            box-shadow: 0 0 0 1.5px #eab308;
             border: none;
         }
 
-        /* Градиентная стрелка: светло-жёлтая → жёлтая */
+        /* Градиентная стрелка */
         .connector-arrow {
             position: absolute;
             z-index: 9999;
@@ -257,30 +266,34 @@
         .arrow-line {
             position: absolute;
             background: linear-gradient(90deg, #fef9c3, #fde047);
-            height: 4px;
-            border-radius: 4px;
-            box-shadow: 0 0 3px rgba(253, 224, 71, 0.6);
+            height: 2.5px;
+            border-radius: 3px;
+            box-shadow: 0 0 2px rgba(253, 224, 71, 0.6);
         }
         .arrow-head {
             position: absolute;
             width: 0;
             height: 0;
-            border-top: 7px solid transparent;
-            border-bottom: 7px solid transparent;
-            border-left: 12px solid #fde047;
-            filter: drop-shadow(0 0 2px rgba(253, 224, 71, 0.5));
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 8px solid #fde047;
+            filter: drop-shadow(0 0 1px rgba(253, 224, 71, 0.5));
         }
 
-        @media (max-width: 700px) {
-            .app-container { padding: 1rem; }
-            td, th { padding: 8px 6px; }
-            input[type="number"] { max-width: 100px; font-size: 0.8rem; padding: 6px 5px; }
-            .random-value { font-size: 0.8rem; min-width: 65px; padding: 4px 8px; }
-            .row-index { width: 50px; }
-            .target-icon { font-size: 1.3rem; width: 35px; }
-            .diff-badge { font-size: 0.7rem; padding: 3px 6px; min-width: 45px; }
-            .arrow-line { height: 3px; }
-            .arrow-head { border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 9px solid #fde047; }
+        @media (max-width: 480px) {
+            .app-container { padding: 0.7rem; }
+            .toolbar { padding: 10px 12px; }
+            button { padding: 10px 12px; font-size: 0.75rem; min-width: 90px; }
+            .stats { font-size: 0.65rem; gap: 10px; }
+            .hit-percent { font-size: 0.7rem; padding: 2px 10px; white-space: nowrap; }
+            .hit-percent span { font-size: 0.85rem; }
+            td { padding: 4px 2px; }
+            input[type="number"] { max-width: 65px; padding: 6px 2px; font-size: 0.7rem; }
+            .random-value { font-size: 0.7rem; min-width: 50px; padding: 4px 4px; }
+            .target-icon { font-size: 1rem; width: 25px; }
+            .diff-badge { font-size: 0.6rem; padding: 2px 4px; min-width: 35px; }
+            .row-index { width: 35px; font-size: 0.65rem; }
+            th { padding: 8px 4px; font-size: 0.65rem; }
         }
     </style>
 </head>
@@ -294,7 +307,7 @@
         <div class="stats">
             <span>✅ Всего: <strong id="valid-count">0</strong></span>
             <span>🎯 Попаданий: <strong id="hit-count">0</strong></span>
-            <div class="hit-percent">📊 Процент попаданий: <span id="percent-value">0.00</span>%</div>
+            <div class="hit-percent">📊 Процент: <span id="percent-value">0.00</span>%</div>
         </div>
     </div>
     <div class="table-wrapper" id="table-wrapper">
@@ -308,7 +321,6 @@
 <script>
     (function() {
         const ROWS = 200;
-        // Диапазон поиска: выше на 1-2 строки, ниже на 1-2 строки
         const UP_OFFSETS = [-1, -2];
         const DOWN_OFFSETS = [1, 2];
         const ALL_OFFSETS = [...UP_OFFSETS, ...DOWN_OFFSETS];
@@ -398,11 +410,9 @@
             let rectRand = cellRand.getBoundingClientRect();
             let rectInp = cellInp.getBoundingClientRect();
             
-            // Начало стрелки: левый край поля столбца 2 + 20% от ширины ячейки
             let offsetX = rectRand.width * 0.2;
             let startX = rectRand.left + offsetX - wrapperRect.left;
             let startY = rectRand.top + rectRand.height / 2 - wrapperRect.top;
-            // Конец стрелки: правый край поля столбца 1
             let endX = rectInp.right - wrapperRect.left;
             let endY = rectInp.top + rectInp.height / 2 - wrapperRect.top;
             
@@ -414,20 +424,20 @@
             
             let line = document.createElement('div');
             line.className = 'arrow-line';
-            line.style.width = `${Math.max(0, length - 12)}px`;
-            line.style.height = '4px';
+            line.style.width = `${Math.max(0, length - 8)}px`;
+            line.style.height = '2.5px';
             line.style.left = '0';
             line.style.top = '0';
             
             let head = document.createElement('div');
             head.className = 'arrow-head';
-            head.style.left = `${Math.max(0, length - 12)}px`;
-            head.style.top = '-6px';
+            head.style.left = `${Math.max(0, length - 8)}px`;
+            head.style.top = '-4px';
             
             container.appendChild(line);
             container.appendChild(head);
             container.style.width = `${length}px`;
-            container.style.height = '4px';
+            container.style.height = '2.5px';
             container.style.left = `${startX}px`;
             container.style.top = `${startY}px`;
             container.style.transform = `rotate(${angle}deg)`;
@@ -440,7 +450,6 @@
         }
         
         function updateAllBadgesAndArrows() {
-            // Удаляем все стрелки
             arrows.forEach(a => a.remove());
             arrows = [];
             
@@ -479,7 +488,6 @@
                 }
             }
             
-            // Обновляем иконки (прицел/молния) и фон полей
             for (let i = 0; i < ROWS; i++) {
                 updateRowVisuals(i);
             }
@@ -590,7 +598,6 @@
                 inp.addEventListener('input', (idx => e => onInput(e, idx))(i));
             }
             tbody.appendChild(frag);
-            
             updateStats();
         }
         
