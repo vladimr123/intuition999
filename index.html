@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Таблица 200×2 | Прицел (🎯) и Молния (⚡)</title>
+    <title>Таблица 200×2 | Жёлтый фон у начала стрелки</title>
     <style>
         * {
             box-sizing: border-box;
@@ -211,6 +211,11 @@
             color: #0a5e2e;
             box-shadow: 0 0 0 2px #2c9a6e55;
         }
+        /* Жёлтый фон для ячейки, откуда начинается стрелка */
+        .random-value.arrow-start {
+            background: linear-gradient(90deg, #fef08a, #fde047);
+            color: #854d0e;
+        }
 
         .target-icon {
             font-size: 1.6rem;
@@ -365,14 +370,18 @@
                 icon.innerHTML = '🎯';
                 icon.style.opacity = '1';
                 rspan.classList.add('highlight-green');
+                rspan.classList.remove('arrow-start');
             } else {
                 let hasVert = (findVertHitForRow(row) !== null);
                 if (hasVert) {
                     icon.innerHTML = '⚡';
                     icon.style.opacity = '1';
+                    rspan.classList.add('arrow-start');
                 } else {
                     icon.innerHTML = '—';
                     icon.style.opacity = '0.3';
+                    rspan.classList.remove('highlight-green');
+                    rspan.classList.remove('arrow-start');
                 }
                 rspan.classList.remove('highlight-green');
             }
@@ -470,7 +479,7 @@
                 }
             }
             
-            // Обновляем иконки (прицел/молния)
+            // Обновляем иконки (прицел/молния) и фон полей
             for (let i = 0; i < ROWS; i++) {
                 updateRowVisuals(i);
             }
@@ -507,6 +516,7 @@
                 if(randomSpans[i]) {
                     randomSpans[i].textContent = rand(100,999);
                     randomSpans[i].classList.remove('highlight-green');
+                    randomSpans[i].classList.remove('arrow-start');
                 }
             }
             fullUpdate();
@@ -523,6 +533,7 @@
                 if(randomSpans[i]) { 
                     randomSpans[i].textContent='—'; 
                     randomSpans[i].classList.remove('highlight-green');
+                    randomSpans[i].classList.remove('arrow-start');
                 }
                 if(targetIcons[i]) { 
                     targetIcons[i].innerHTML='—'; 
