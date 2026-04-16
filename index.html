@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Таблица 200×2 | Прицел (🎯) и Молния (⚡) — мобильная версия</title>
+    <title>Таблица 200×2 | Прицел (🎯) и Молния (⚡)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -118,7 +118,6 @@
             margin: 12px 0 0;
             max-height: 65vh;
             scroll-behavior: smooth;
-            position: relative;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -127,9 +126,7 @@
             border-collapse: collapse;
             font-size: 0.75rem;
             min-width: 500px;
-            position: relative;
             background: white;
-            z-index: 1;
         }
 
         th {
@@ -149,7 +146,6 @@
             text-align: center;
             border-bottom: 1px solid #e2edf2;
             background-color: #ffffff;
-            position: relative;
         }
         tr:active td { background-color: #fef7e0; }
 
@@ -202,19 +198,14 @@
         }
 
         .random-value {
-            background: #f2f7fc;
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
             font-size: 0.75rem;
-            color: #0f5b7a;
             padding: 5px 8px;
             border-radius: 40px;
             min-width: 60px;
-            background: #eef3fa;
             display: inline-block;
             transition: all 0.2s ease;
-            position: relative;
-            z-index: 2;
         }
         .random-value.highlight-green {
             background: #c6f7d0;
@@ -257,29 +248,6 @@
             border: none;
         }
 
-        /* Градиентная стрелка */
-        .connector-arrow {
-            position: absolute;
-            z-index: 9999;
-            pointer-events: none;
-        }
-        .arrow-line {
-            position: absolute;
-            background: linear-gradient(90deg, #fef9c3, #fde047);
-            height: 2.5px;
-            border-radius: 3px;
-            box-shadow: 0 0 2px rgba(253, 224, 71, 0.6);
-        }
-        .arrow-head {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-top: 5px solid transparent;
-            border-bottom: 5px solid transparent;
-            border-left: 8px solid #fde047;
-            filter: drop-shadow(0 0 1px rgba(253, 224, 71, 0.5));
-        }
-
         @media (max-width: 480px) {
             .app-container { padding: 0.7rem; }
             .toolbar { padding: 10px 12px; }
@@ -310,7 +278,7 @@
             <div class="hit-percent">📊 Процент: <span id="percent-value">0.00</span>%</div>
         </div>
     </div>
-    <div class="table-wrapper" id="table-wrapper">
+    <div class="table-wrapper">
         <table id="data-table">
             <thead><tr><th>#</th><th></th><th></th><th></th><th></th></tr></thead>
             <tbody id="table-body"></tbody>
@@ -325,14 +293,13 @@
         const DOWN_OFFSETS = [1, 2];
         const ALL_OFFSETS = [...UP_OFFSETS, ...DOWN_OFFSETS];
         
-        const wrapper = document.getElementById('table-wrapper');
         const tbody = document.getElementById('table-body');
         const validSpan = document.getElementById('valid-count');
         const hitSpan = document.getElementById('hit-count');
         const percentSpan = document.getElementById('percent-value');
         
         let inputs = [], randomSpans = [], targetIcons = [], diffSpans = [];
-        let arrows = [], updateTimer = null;
+        let updateTimer = null;
         
         function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
         
@@ -399,81 +366,27 @@
             }
         }
         
-        function drawArrowBetweenFields(randomRow, inputRow) {
-            let rows = tbody.querySelectorAll('tr');
-            if (randomRow >= rows.length || inputRow >= rows.length) return;
-            let cellRand = rows[randomRow].querySelectorAll('td')[2];
-            let cellInp = rows[inputRow].querySelectorAll('td')[1];
-            if (!cellRand || !cellInp) return;
-            
-            let wrapperRect = wrapper.getBoundingClientRect();
-            let rectRand = cellRand.getBoundingClientRect();
-            let rectInp = cellInp.getBoundingClientRect();
-            
-            let offsetX = rectRand.width * 0.2;
-            let startX = rectRand.left + offsetX - wrapperRect.left;
-            let startY = rectRand.top + rectRand.height / 2 - wrapperRect.top;
-            let endX = rectInp.right - wrapperRect.left;
-            let endY = rectInp.top + rectInp.height / 2 - wrapperRect.top;
-            
-            let length = Math.hypot(endX - startX, endY - startY);
-            let angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
-            
-            let container = document.createElement('div');
-            container.className = 'connector-arrow';
-            
-            let line = document.createElement('div');
-            line.className = 'arrow-line';
-            line.style.width = `${Math.max(0, length - 8)}px`;
-            line.style.height = '2.5px';
-            line.style.left = '0';
-            line.style.top = '0';
-            
-            let head = document.createElement('div');
-            head.className = 'arrow-head';
-            head.style.left = `${Math.max(0, length - 8)}px`;
-            head.style.top = '-4px';
-            
-            container.appendChild(line);
-            container.appendChild(head);
-            container.style.width = `${length}px`;
-            container.style.height = '2.5px';
-            container.style.left = `${startX}px`;
-            container.style.top = `${startY}px`;
-            container.style.transform = `rotate(${angle}deg)`;
-            container.style.transformOrigin = '0 0';
-            container.style.position = 'absolute';
-            
-            wrapper.style.position = 'relative';
-            wrapper.appendChild(container);
-            arrows.push(container);
-        }
-        
-        function updateAllBadgesAndArrows() {
-            arrows.forEach(a => a.remove());
-            arrows = [];
-            
+        function updateAllBadges() {
             for (let i = 0; i < ROWS; i++) {
-                let dspan = diffSpans[i];
+                const dspan = diffSpans[i];
                 if (!dspan) continue;
                 
-                let vertHitRow = findVertHitForRow(i);
+                const vertHitRow = findVertHitForRow(i);
                 
                 if (vertHitRow !== null) {
-                    let b = getRandomVal(i), a = getInputVal(vertHitRow);
+                    const b = getRandomVal(i), a = getInputVal(vertHitRow);
                     if (b !== null && a !== null) {
-                        let diff = b - a;
-                        let txt = diff > 0 ? `+${diff}` : `${diff}`;
+                        const diff = b - a;
+                        const txt = diff > 0 ? `+${diff}` : `${diff}`;
                         dspan.textContent = txt;
                         dspan.className = 'diff-badge vertical-hit';
                         dspan.style.opacity = '1';
-                        drawArrowBetweenFields(i, vertHitRow);
                     }
                 } else if (isHorHit(i)) {
-                    let a = getInputVal(i), b = getRandomVal(i);
+                    const a = getInputVal(i), b = getRandomVal(i);
                     if (a !== null && b !== null) {
-                        let diff = b - a;
-                        let txt = diff > 0 ? `+${diff}` : `${diff}`;
+                        const diff = b - a;
+                        const txt = diff > 0 ? `+${diff}` : `${diff}`;
                         dspan.textContent = txt;
                         dspan.className = 'diff-badge horizontal-hit';
                         dspan.style.opacity = '1';
@@ -496,7 +409,7 @@
         function countValid() { 
             let c = 0; 
             for(let i = 0; i < ROWS; i++) {
-                let val = getInputVal(i);
+                const val = getInputVal(i);
                 if(val !== null && val >= 100 && val <= 999) c++; 
             }
             return c; 
@@ -505,19 +418,22 @@
         function countHits() { let c=0; for(let i=0;i<ROWS;i++) if(isHorHit(i)) c++; return c; }
         
         function updateStats() {
-            let valid = countValid(), hits = countHits();
+            const valid = countValid(), hits = countHits();
             validSpan.textContent = valid;
             hitSpan.textContent = hits;
-            let pct = valid ? (hits/valid)*100 : 0;
+            const pct = valid ? (hits/valid)*100 : 0;
             percentSpan.textContent = pct.toFixed(2);
         }
         
         function fullUpdate() {
-            updateAllBadgesAndArrows();
+            updateAllBadges();
             updateStats();
         }
         
-        function schedule() { if(updateTimer) clearTimeout(updateTimer); updateTimer = setTimeout(()=>{ fullUpdate(); updateTimer=null; }, 10); }
+        function scheduleUpdate() { 
+            if(updateTimer) clearTimeout(updateTimer); 
+            updateTimer = setTimeout(()=>{ fullUpdate(); updateTimer=null; }, 50); 
+        }
         
         function generateAll() {
             for (let i=0; i<ROWS; i++) {
@@ -528,7 +444,7 @@
                 }
             }
             fullUpdate();
-            let btn = document.getElementById('global-generate-btn');
+            const btn = document.getElementById('global-generate-btn');
             if(btn) { btn.style.transform='scale(0.98)'; setTimeout(()=>{ if(btn) btn.style.transform=''; }, 120); }
         }
         
@@ -566,33 +482,33 @@
             if(n > 999) inp.value = 999;
             setTimeout(() => {
                 if(inp.value.length === 3 && row < ROWS-1) {
-                    let next = inputs[row+1];
+                    const next = inputs[row+1];
                     if(next) { next.focus(); next.select(); }
                 }
             }, 5);
         }
         
         function onInput(e, row) {
-            let inp = e.target;
+            const inp = e.target;
             enforceLimitAndMove(inp, row);
-            let val = inp.value;
-            let res = validate(val);
+            const val = inp.value;
+            const res = validate(val);
             if(res.ok) inp.classList.add('valid-input'), inp.classList.remove('invalid-input');
             else inp.classList.remove('valid-input'), inp.classList.add('invalid-input');
-            schedule();
+            scheduleUpdate();
         }
         
         function buildTable() {
             tbody.innerHTML = '';
             inputs = []; randomSpans = []; targetIcons = []; diffSpans = [];
-            let frag = document.createDocumentFragment();
+            const frag = document.createDocumentFragment();
             for(let i=0; i<ROWS; i++) {
-                let tr = document.createElement('tr');
-                let tdIdx = document.createElement('td'); tdIdx.className='row-index'; tdIdx.textContent=`${i+1}`; tr.appendChild(tdIdx);
-                let tdInp = document.createElement('td'); let inp = document.createElement('input'); inp.type='number'; inp.placeholder=''; inp.step='1'; inp.min='100'; inp.max='999'; inp.value=''; tdInp.appendChild(inp); tr.appendChild(tdInp);
-                let tdRand = document.createElement('td'); let rspan = document.createElement('span'); rspan.className='random-value'; rspan.textContent='—'; tdRand.appendChild(rspan); tr.appendChild(tdRand);
-                let tdIcon = document.createElement('td'); let icon = document.createElement('span'); icon.className='target-icon'; icon.innerHTML='—'; icon.style.opacity='0.3'; tdIcon.appendChild(icon); tr.appendChild(tdIcon);
-                let tdDiff = document.createElement('td'); let dspan = document.createElement('span'); dspan.className='diff-badge'; dspan.textContent='—'; dspan.style.backgroundColor='#f3f4f6'; dspan.style.color='#9ca3af'; dspan.style.opacity='0.5'; tdDiff.appendChild(dspan); tr.appendChild(tdDiff);
+                const tr = document.createElement('tr');
+                const tdIdx = document.createElement('td'); tdIdx.className='row-index'; tdIdx.textContent=`${i+1}`; tr.appendChild(tdIdx);
+                const tdInp = document.createElement('td'); const inp = document.createElement('input'); inp.type='number'; inp.placeholder=''; inp.step='1'; inp.min='100'; inp.max='999'; inp.value=''; tdInp.appendChild(inp); tr.appendChild(tdInp);
+                const tdRand = document.createElement('td'); const rspan = document.createElement('span'); rspan.className='random-value'; rspan.textContent='—'; tdRand.appendChild(rspan); tr.appendChild(tdRand);
+                const tdIcon = document.createElement('td'); const icon = document.createElement('span'); icon.className='target-icon'; icon.innerHTML='—'; icon.style.opacity='0.3'; tdIcon.appendChild(icon); tr.appendChild(tdIcon);
+                const tdDiff = document.createElement('td'); const dspan = document.createElement('span'); dspan.className='diff-badge'; dspan.textContent='—'; dspan.style.backgroundColor='#f3f4f6'; dspan.style.color='#9ca3af'; dspan.style.opacity='0.5'; tdDiff.appendChild(dspan); tr.appendChild(tdDiff);
                 frag.appendChild(tr);
                 inputs.push(inp); randomSpans.push(rspan); targetIcons.push(icon); diffSpans.push(dspan);
                 inp.addEventListener('input', (idx => e => onInput(e, idx))(i));
@@ -602,21 +518,15 @@
         }
         
         function bindButtons() {
-            let gen = document.getElementById('global-generate-btn');
-            if(gen) { let ng = gen.cloneNode(true); gen.parentNode.replaceChild(ng, gen); ng.addEventListener('click', generateAll); }
-            let clr = document.getElementById('clear-all-btn');
-            if(clr) { let nc = clr.cloneNode(true); clr.parentNode.replaceChild(nc, clr); nc.addEventListener('click', clearAll); }
-        }
-        
-        function refreshOnScrollResize() {
-            fullUpdate();
+            const gen = document.getElementById('global-generate-btn');
+            if(gen) { const ng = gen.cloneNode(true); gen.parentNode.replaceChild(ng, gen); ng.addEventListener('click', generateAll); }
+            const clr = document.getElementById('clear-all-btn');
+            if(clr) { const nc = clr.cloneNode(true); clr.parentNode.replaceChild(nc, clr); nc.addEventListener('click', clearAll); }
         }
         
         function init() {
             buildTable();
             bindButtons();
-            window.addEventListener('resize', refreshOnScrollResize);
-            wrapper.addEventListener('scroll', refreshOnScrollResize);
             setTimeout(() => fullUpdate(), 100);
         }
         init();
