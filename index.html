@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Таблица 200×2 | Прицел (🎯) и Молния (⚡)</title>
+    <title>Таблица 200×2 | Прицел, Молния и Точные попадания</title>
     <style>
         * {
             box-sizing: border-box;
@@ -95,6 +95,12 @@
             gap: 16px;
             flex-wrap: wrap;
             text-align: center;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .hit-percent {
@@ -207,14 +213,18 @@
             display: inline-block;
             transition: all 0.2s ease;
         }
+        /* Зеленый фон и окантовка для попаданий (включая точные) */
         .random-value.highlight-green {
             background: #c6f7d0;
             color: #0a5e2e;
-            box-shadow: 0 0 0 1.5px #2c9a6e;
+            box-shadow: 0 0 0 2px #2c9a6e;
+            border: 1px solid #2c9a6e;
         }
         .random-value.arrow-start {
             background: linear-gradient(90deg, #fef08a, #fde047);
             color: #854d0e;
+            box-shadow: none;
+            border: none;
         }
 
         .target-icon {
@@ -235,10 +245,11 @@
             text-align: center;
             transition: all 0.2s ease;
         }
+        /* Для горизонтальных попаданий (разница 0-20) - зеленый фон и зеленая окантовка */
         .diff-badge.horizontal-hit {
-            background: #86efac;
-            color: #166534;
-            box-shadow: 0 0 0 1.5px #2c9a6e;
+            background: #c6f7d0;
+            color: #0a5e2e;
+            box-shadow: 0 0 0 2px #2c9a6e;
             border: 1px solid #2c9a6e;
         }
         .diff-badge.vertical-hit {
@@ -246,6 +257,12 @@
             color: #854d0e;
             box-shadow: 0 0 0 1.5px #eab308;
             border: none;
+        }
+        .diff-badge.exact-hit {
+            background: #c6f7d0;
+            color: #0a5e2e;
+            box-shadow: 0 0 0 2px #2c9a6e;
+            border: 1px solid #2c9a6e;
         }
 
         @media (max-width: 480px) {
@@ -273,9 +290,10 @@
             <button id="clear-all-btn" class="btn-clear">🧹 Очистить</button>
         </div>
         <div class="stats">
-            <span>✅ Всего: <strong id="valid-count">0</strong></span>
-            <span>🎯 Попаданий: <strong id="hit-count">0</strong></span>
-            <div class="hit-percent">📊 Процент: <span id="percent-value">0.00</span>%</div>
+            <div class="stat-item">✅ Всего: <strong id="valid-count">0</strong></div>
+            <div class="stat-item">🎯 Попаданий: <strong id="hit-count">0</strong></div>
+            <div class="stat-item">✨ Точных: <strong id="exact-count">0</strong></div>
+            <div class="hit-percent">📊 Процент попаданий: <span id="percent-value">0.00</span>%</div>
         </div>
     </div>
     <div class="table-wrapper">
@@ -296,6 +314,7 @@
         const tbody = document.getElementById('table-body');
         const validSpan = document.getElementById('valid-count');
         const hitSpan = document.getElementById('hit-count');
+        const exactSpan = document.getElementById('exact-count');
         const percentSpan = document.getElementById('percent-value');
         
         let inputs = [], randomSpans = [], targetIcons = [], diffSpans = [];
@@ -321,9 +340,21 @@
             return (n >= 100 && n <= 999) ? n : null;
         }
         
-        function isHorHit(row) {
+        // ПОПАДАНИЕ: разница от 0 до 20 включительно (0, 1-20)
+        function isHit(row) {
             let a = getInputVal(row), b = getRandomVal(row);
-            if (a !== null && b !== null) { let d = Math.abs(a - b); return d >= 1 && d <= 20; }
+            if (a !== null && b !== null) { 
+                let d = Math.abs(a - b); 
+                return d >= 0 && d <= 20; 
+            }
+            return false;
+        }
+        
+        function isExactHit(row) {
+            let a = getInputVal(row), b = getRandomVal(row);
+            if (a !== null && b !== null) {
+                return a === b;
+            }
             return false;
         }
         
@@ -345,7 +376,12 @@
         function updateRowVisuals(row) {
             let icon = targetIcons[row], rspan = randomSpans[row];
             if (!icon || !rspan) return;
-            if (isHorHit(row)) {
+            
+            const hit = isHit(row);
+            const exact = isExactHit(row);
+            
+            if (hit) {
+                // Попадание (включая точное) - иконка прицела и зелёный фон с окантовкой
                 icon.innerHTML = '🎯';
                 icon.style.opacity = '1';
                 rspan.classList.add('highlight-green');
@@ -371,9 +407,15 @@
                 const dspan = diffSpans[i];
                 if (!dspan) continue;
                 
+                const exact = isExactHit(i);
+                const hit = isHit(i);
                 const vertHitRow = findVertHitForRow(i);
                 
-                if (vertHitRow !== null) {
+                if (exact) {
+                    dspan.textContent = '0';
+                    dspan.className = 'diff-badge exact-hit';
+                    dspan.style.opacity = '1';
+                } else if (vertHitRow !== null) {
                     const b = getRandomVal(i), a = getInputVal(vertHitRow);
                     if (b !== null && a !== null) {
                         const diff = b - a;
@@ -382,7 +424,7 @@
                         dspan.className = 'diff-badge vertical-hit';
                         dspan.style.opacity = '1';
                     }
-                } else if (isHorHit(i)) {
+                } else if (hit) {
                     const a = getInputVal(i), b = getRandomVal(i);
                     if (a !== null && b !== null) {
                         const diff = b - a;
@@ -415,12 +457,29 @@
             return c; 
         }
         
-        function countHits() { let c=0; for(let i=0;i<ROWS;i++) if(isHorHit(i)) c++; return c; }
+        function countHits() { 
+            let c = 0; 
+            for(let i = 0; i < ROWS; i++) {
+                if(isHit(i)) c++; 
+            }
+            return c; 
+        }
+        
+        function countExact() { 
+            let c = 0; 
+            for(let i = 0; i < ROWS; i++) {
+                if(isExactHit(i)) c++; 
+            }
+            return c; 
+        }
         
         function updateStats() {
-            const valid = countValid(), hits = countHits();
+            const valid = countValid();
+            const hits = countHits();
+            const exact = countExact();
             validSpan.textContent = valid;
             hitSpan.textContent = hits;
+            exactSpan.textContent = exact;
             const pct = valid ? (hits/valid)*100 : 0;
             percentSpan.textContent = pct.toFixed(2);
         }
