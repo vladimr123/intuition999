@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Intuition 999</title>
+    <title>Таблица 200×2 | Прицел, Молния и Точные попадания</title>
     <style>
         * {
             box-sizing: border-box;
@@ -330,6 +330,14 @@
             return { ok: false, val: null };
         }
         
+        // Функция для очистки ведущих нулей
+        function removeLeadingZeros(str) {
+            if (!str) return str;
+            // Убираем все ведущие нули, но если после удаления пусто, возвращаем пустую строку
+            let cleaned = str.replace(/^0+/, '');
+            return cleaned === '' ? '' : cleaned;
+        }
+        
         function getInputVal(row) { let v = validate(inputs[row]?.value); return v.ok ? v.val : null; }
         function getRandomVal(row) {
             let span = randomSpans[row];
@@ -536,9 +544,17 @@
         
         function enforceLimitAndMove(inp, row) {
             let v = inp.value;
-            if(v.length > 3) inp.value = v.slice(0,3);
-            let n = Number(inp.value);
-            if(n > 999) inp.value = 999;
+            
+            // Удаляем ведущие нули
+            v = removeLeadingZeros(v);
+            
+            if(v.length > 3) v = v.slice(0,3);
+            let n = Number(v);
+            if(n > 999) v = '999';
+            if(v === '' || v === '0') v = '';
+            
+            inp.value = v;
+            
             setTimeout(() => {
                 if(inp.value.length === 3 && row < ROWS-1) {
                     const next = inputs[row+1];
