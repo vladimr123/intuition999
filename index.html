@@ -212,8 +212,9 @@
             min-width: 60px;
             display: inline-block;
             transition: all 0.2s ease;
+            background: transparent;
+            color: inherit;
         }
-        /* Зеленый фон и окантовка для попаданий (включая точные) */
         .random-value.highlight-green {
             background: #c6f7d0;
             color: #0a5e2e;
@@ -228,41 +229,73 @@
         }
 
         .target-icon {
-            font-size: 1.2rem;
-            width: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            min-width: 65px;
             text-align: center;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        
+        .direction-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            background: transparent;
+            color: #854d0e;
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 30px;
+            letter-spacing: 0.5px;
+        }
+        
+        .direction-badge .arrow {
+            font-size: 0.85rem;
+        }
+        
+        .direction-badge .distance {
+            font-weight: 800;
+            margin-left: 2px;
         }
 
         .diff-badge {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
-            font-size: 0.7rem;
-            padding: 4px 6px;
-            border-radius: 32px;
+            font-size: 0.75rem;
+            padding: 5px 8px;
+            border-radius: 40px;
             display: inline-block;
-            min-width: 45px;
+            min-width: 60px;
             text-align: center;
             transition: all 0.2s ease;
+            position: relative;
         }
-        /* Для горизонтальных попаданий (разница 0-20) - зеленый фон и зеленая окантовка */
         .diff-badge.horizontal-hit {
             background: #c6f7d0;
             color: #0a5e2e;
             box-shadow: 0 0 0 2px #2c9a6e;
             border: 1px solid #2c9a6e;
+            border-top: 2px solid #2c9a6e;
         }
         .diff-badge.vertical-hit {
             background: #fde047;
             color: #854d0e;
             box-shadow: 0 0 0 1.5px #eab308;
             border: none;
+            border-top: 2px solid #eab308;
         }
         .diff-badge.exact-hit {
             background: #c6f7d0;
             color: #0a5e2e;
             box-shadow: 0 0 0 2px #2c9a6e;
             border: 1px solid #2c9a6e;
+            border-top: 2px solid #2c9a6e;
         }
 
         @media (max-width: 480px) {
@@ -274,9 +307,9 @@
             .hit-percent span { font-size: 0.85rem; }
             td { padding: 4px 2px; }
             input[type="number"] { max-width: 65px; padding: 6px 2px; font-size: 0.7rem; }
-            .random-value { font-size: 0.7rem; min-width: 50px; padding: 4px 4px; }
-            .target-icon { font-size: 1rem; width: 25px; }
-            .diff-badge { font-size: 0.6rem; padding: 2px 4px; min-width: 35px; }
+            .random-value, .diff-badge { font-size: 0.7rem; min-width: 50px; padding: 4px 4px; }
+            .target-icon { font-size: 0.75rem; min-width: 50px; }
+            .direction-badge { font-size: 0.6rem; padding: 1px 6px; }
             .row-index { width: 35px; font-size: 0.65rem; }
             th { padding: 8px 4px; font-size: 0.65rem; }
         }
@@ -291,6 +324,7 @@
         </div>
         <div class="stats">
             <div class="stat-item">✅ Всего: <strong id="valid-count">0</strong></div>
+            <div class="stat-item">🔗 Рядом: <strong id="nearby-count">0</strong></div>
             <div class="stat-item">🎯 Попаданий: <strong id="hit-count">0</strong></div>
             <div class="stat-item">✨ Точных: <strong id="exact-count">0</strong></div>
             <div class="hit-percent">📊 Процент попаданий: <span id="percent-value">0.00</span>%</div>
@@ -300,7 +334,7 @@
         <table id="data-table">
             <thead><tr><th>#</th><th></th><th></th><th></th><th></th></tr></thead>
             <tbody id="table-body"></tbody>
-        <table>
+        </table>
     </div>
 </div>
 
@@ -315,6 +349,7 @@
         const validSpan = document.getElementById('valid-count');
         const hitSpan = document.getElementById('hit-count');
         const exactSpan = document.getElementById('exact-count');
+        const nearbySpan = document.getElementById('nearby-count');
         const percentSpan = document.getElementById('percent-value');
         
         let inputs = [], randomSpans = [], targetIcons = [], diffSpans = [];
@@ -330,10 +365,8 @@
             return { ok: false, val: null };
         }
         
-        // Функция для очистки ведущих нулей
         function removeLeadingZeros(str) {
             if (!str) return str;
-            // Убираем все ведущие нули, но если после удаления пусто, возвращаем пустую строку
             let cleaned = str.replace(/^0+/, '');
             return cleaned === '' ? '' : cleaned;
         }
@@ -343,12 +376,11 @@
             let span = randomSpans[row];
             if (!span) return null;
             let txt = span.textContent;
-            if (txt === '—' || !txt) return null;
+            if (txt === '' || !txt) return null;
             let n = Number(txt);
             return (n >= 100 && n <= 999) ? n : null;
         }
         
-        // ПОПАДАНИЕ: разница от 0 до 20 включительно (0, 1-20)
         function isHit(row) {
             let a = getInputVal(row), b = getRandomVal(row);
             if (a !== null && b !== null) { 
@@ -364,6 +396,27 @@
                 return a === b;
             }
             return false;
+        }
+        
+        function getNearbyInfo(row) {
+            for (let off of ALL_OFFSETS) {
+                let otherRow = row + off;
+                if (otherRow >= 0 && otherRow < ROWS) {
+                    let b = getRandomVal(row);
+                    let a = getInputVal(otherRow);
+                    if (a !== null && b !== null) {
+                        let d = Math.abs(a - b);
+                        if (d >= 1 && d <= 20) {
+                            return { offset: off, direction: off < 0 ? '↑' : '↓', distance: Math.abs(off) };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        
+        function hasNearbyHit(row) {
+            return getNearbyInfo(row) !== null;
         }
         
         function isVertHit(randomRow, inputRow) {
@@ -389,24 +442,22 @@
             const exact = isExactHit(row);
             
             if (hit) {
-                // Попадание (включая точное) - иконка прицела и зелёный фон с окантовкой
                 icon.innerHTML = '🎯';
-                icon.style.opacity = '1';
                 rspan.classList.add('highlight-green');
                 rspan.classList.remove('arrow-start');
             } else {
-                let hasVert = (findVertHitForRow(row) !== null);
-                if (hasVert) {
-                    icon.innerHTML = '⚡';
-                    icon.style.opacity = '1';
+                let nearbyInfo = getNearbyInfo(row);
+                if (nearbyInfo) {
+                    icon.innerHTML = `<span class="direction-badge"><span class="arrow">${nearbyInfo.direction}</span><span class="distance">${nearbyInfo.distance}</span><span style="margin-left:2px;">⚡</span></span>`;
                     rspan.classList.add('arrow-start');
                 } else {
-                    icon.innerHTML = '—';
-                    icon.style.opacity = '0.3';
+                    icon.innerHTML = '';
                     rspan.classList.remove('highlight-green');
                     rspan.classList.remove('arrow-start');
                 }
-                rspan.classList.remove('highlight-green');
+                if (!hit) {
+                    rspan.classList.remove('highlight-green');
+                }
             }
         }
         
@@ -423,6 +474,9 @@
                     dspan.textContent = '0';
                     dspan.className = 'diff-badge exact-hit';
                     dspan.style.opacity = '1';
+                    dspan.style.backgroundColor = '#c6f7d0';
+                    dspan.style.color = '#0a5e2e';
+                    dspan.style.borderTop = '2px solid #2c9a6e';
                 } else if (vertHitRow !== null) {
                     const b = getRandomVal(i), a = getInputVal(vertHitRow);
                     if (b !== null && a !== null) {
@@ -431,6 +485,9 @@
                         dspan.textContent = txt;
                         dspan.className = 'diff-badge vertical-hit';
                         dspan.style.opacity = '1';
+                        dspan.style.backgroundColor = '#fde047';
+                        dspan.style.color = '#854d0e';
+                        dspan.style.borderTop = '2px solid #eab308';
                     }
                 } else if (hit) {
                     const a = getInputVal(i), b = getRandomVal(i);
@@ -440,14 +497,18 @@
                         dspan.textContent = txt;
                         dspan.className = 'diff-badge horizontal-hit';
                         dspan.style.opacity = '1';
+                        dspan.style.backgroundColor = '#c6f7d0';
+                        dspan.style.color = '#0a5e2e';
+                        dspan.style.borderTop = '2px solid #2c9a6e';
                     }
                 } else {
-                    dspan.textContent = '—';
+                    dspan.textContent = '';
                     dspan.className = 'diff-badge';
-                    dspan.style.backgroundColor = '#f3f4f6';
-                    dspan.style.color = '#9ca3af';
-                    dspan.style.opacity = '0.5';
+                    dspan.style.backgroundColor = 'transparent';
+                    dspan.style.color = 'transparent';
+                    dspan.style.opacity = '0';
                     dspan.style.border = 'none';
+                    dspan.style.boxShadow = 'none';
                 }
             }
             
@@ -481,13 +542,23 @@
             return c; 
         }
         
+        function countNearby() {
+            let c = 0;
+            for (let i = 0; i < ROWS; i++) {
+                if (hasNearbyHit(i)) c++;
+            }
+            return c;
+        }
+        
         function updateStats() {
             const valid = countValid();
             const hits = countHits();
             const exact = countExact();
+            const nearby = countNearby();
             validSpan.textContent = valid;
             hitSpan.textContent = hits;
             exactSpan.textContent = exact;
+            nearbySpan.textContent = nearby;
             const pct = valid ? (hits/valid)*100 : 0;
             percentSpan.textContent = pct.toFixed(2);
         }
@@ -522,21 +593,21 @@
                     inputs[i].classList.remove('valid-input','invalid-input');
                 }
                 if(randomSpans[i]) { 
-                    randomSpans[i].textContent='—'; 
+                    randomSpans[i].textContent=''; 
                     randomSpans[i].classList.remove('highlight-green');
                     randomSpans[i].classList.remove('arrow-start');
                 }
                 if(targetIcons[i]) { 
-                    targetIcons[i].innerHTML='—'; 
-                    targetIcons[i].style.opacity='0.3';
+                    targetIcons[i].innerHTML=''; 
                 }
                 if(diffSpans[i]) {
-                    diffSpans[i].textContent='—';
+                    diffSpans[i].textContent='';
                     diffSpans[i].className='diff-badge';
-                    diffSpans[i].style.backgroundColor='#f3f4f6';
-                    diffSpans[i].style.color='#9ca3af';
-                    diffSpans[i].style.opacity='0.5';
+                    diffSpans[i].style.backgroundColor = 'transparent';
+                    diffSpans[i].style.color = 'transparent';
+                    diffSpans[i].style.opacity = '0';
                     diffSpans[i].style.border = 'none';
+                    diffSpans[i].style.boxShadow = 'none';
                 }
             }
             fullUpdate();
@@ -544,17 +615,12 @@
         
         function enforceLimitAndMove(inp, row) {
             let v = inp.value;
-            
-            // Удаляем ведущие нули
             v = removeLeadingZeros(v);
-            
             if(v.length > 3) v = v.slice(0,3);
             let n = Number(v);
             if(n > 999) v = '999';
             if(v === '' || v === '0') v = '';
-            
             inp.value = v;
-            
             setTimeout(() => {
                 if(inp.value.length === 3 && row < ROWS-1) {
                     const next = inputs[row+1];
@@ -581,9 +647,9 @@
                 const tr = document.createElement('tr');
                 const tdIdx = document.createElement('td'); tdIdx.className='row-index'; tdIdx.textContent=`${i+1}`; tr.appendChild(tdIdx);
                 const tdInp = document.createElement('td'); const inp = document.createElement('input'); inp.type='number'; inp.placeholder=''; inp.step='1'; inp.min='100'; inp.max='999'; inp.value=''; tdInp.appendChild(inp); tr.appendChild(tdInp);
-                const tdRand = document.createElement('td'); const rspan = document.createElement('span'); rspan.className='random-value'; rspan.textContent='—'; tdRand.appendChild(rspan); tr.appendChild(tdRand);
-                const tdIcon = document.createElement('td'); const icon = document.createElement('span'); icon.className='target-icon'; icon.innerHTML='—'; icon.style.opacity='0.3'; tdIcon.appendChild(icon); tr.appendChild(tdIcon);
-                const tdDiff = document.createElement('td'); const dspan = document.createElement('span'); dspan.className='diff-badge'; dspan.textContent='—'; dspan.style.backgroundColor='#f3f4f6'; dspan.style.color='#9ca3af'; dspan.style.opacity='0.5'; tdDiff.appendChild(dspan); tr.appendChild(tdDiff);
+                const tdRand = document.createElement('td'); const rspan = document.createElement('span'); rspan.className='random-value'; rspan.textContent=''; tdRand.appendChild(rspan); tr.appendChild(tdRand);
+                const tdIcon = document.createElement('td'); const icon = document.createElement('span'); icon.className='target-icon'; icon.innerHTML=''; tdIcon.appendChild(icon); tr.appendChild(tdIcon);
+                const tdDiff = document.createElement('td'); const dspan = document.createElement('span'); dspan.className='diff-badge'; dspan.textContent=''; dspan.style.backgroundColor = 'transparent'; dspan.style.color = 'transparent'; dspan.style.opacity = '0'; tdDiff.appendChild(dspan); tr.appendChild(tdDiff);
                 frag.appendChild(tr);
                 inputs.push(inp); randomSpans.push(rspan); targetIcons.push(icon); diffSpans.push(dspan);
                 inp.addEventListener('input', (idx => e => onInput(e, idx))(i));
