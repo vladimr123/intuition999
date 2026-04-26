@@ -330,7 +330,7 @@
             <div class="hit-percent">📊 Процент попаданий: <span id="percent-value">0.00</span>%</div>
         </div>
     </div>
-    <div class="table-wrapper">
+    <div class="table-wrapper" id="table-wrapper">
         <table id="data-table">
             <thead><tr><th>#</th><th></th><th></th><th></th><th></th></tr></thead>
             <tbody id="table-body"></tbody>
@@ -345,6 +345,7 @@
         const DOWN_OFFSETS = [1, 2];
         const ALL_OFFSETS = [...UP_OFFSETS, ...DOWN_OFFSETS];
         
+        const wrapper = document.getElementById('table-wrapper');
         const tbody = document.getElementById('table-body');
         const validSpan = document.getElementById('valid-count');
         const hitSpan = document.getElementById('hit-count');
@@ -611,6 +612,15 @@
                 }
             }
             fullUpdate();
+            
+            // Прокрутка таблицы наверх и фокус на первое поле ввода
+            if (wrapper) {
+                wrapper.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            if (inputs[0]) {
+                inputs[0].focus();
+                inputs[0].select();
+            }
         }
         
         function enforceLimitAndMove(inp, row) {
