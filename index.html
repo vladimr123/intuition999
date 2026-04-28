@@ -358,6 +358,18 @@
         
         function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
         
+        // Функция для получения отсортированной строки цифр числа
+        function getSortedDigits(num) {
+            return String(num).split('').sort().join('');
+        }
+        
+        // Проверка на совпадение цифр (перестановка)
+        function isDigitMatch(a, b) {
+            if (a === null || b === null) return false;
+            if (a === b) return false; // точное попадание не считаем за цифровое здесь
+            return getSortedDigits(a) === getSortedDigits(b);
+        }
+        
         function validate(v) {
             if (v === null || v === undefined || v === "") return { ok: false, val: null };
             let n = Number(v);
@@ -382,11 +394,13 @@
             return (n >= 100 && n <= 999) ? n : null;
         }
         
+        // Основное попадание: разница 0-20 ИЛИ совпадение цифр (перестановка)
         function isHit(row) {
             let a = getInputVal(row), b = getRandomVal(row);
             if (a !== null && b !== null) { 
                 let d = Math.abs(a - b); 
-                return d >= 0 && d <= 20; 
+                if (d >= 0 && d <= 20) return true;
+                if (isDigitMatch(a, b)) return true;
             }
             return false;
         }
@@ -395,6 +409,14 @@
             let a = getInputVal(row), b = getRandomVal(row);
             if (a !== null && b !== null) {
                 return a === b;
+            }
+            return false;
+        }
+        
+        function isDigitHitOnly(row) {
+            let a = getInputVal(row), b = getRandomVal(row);
+            if (a !== null && b !== null && a !== b) {
+                return isDigitMatch(a, b);
             }
             return false;
         }
@@ -439,11 +461,20 @@
             let icon = targetIcons[row], rspan = randomSpans[row];
             if (!icon || !rspan) return;
             
-            const hit = isHit(row);
             const exact = isExactHit(row);
+            const hit = isHit(row);
+            const digit = isDigitHitOnly(row);
             
-            if (hit) {
-                icon.innerHTML = '🎯';
+            if (exact) {
+                icon.innerHTML = '🎯✨';
+                rspan.classList.add('highlight-green');
+                rspan.classList.remove('arrow-start');
+            } else if (hit) {
+                if (digit) {
+                    icon.innerHTML = '🎯🔄';
+                } else {
+                    icon.innerHTML = '🎯';
+                }
                 rspan.classList.add('highlight-green');
                 rspan.classList.remove('arrow-start');
             } else {
@@ -469,6 +500,7 @@
                 
                 const exact = isExactHit(i);
                 const hit = isHit(i);
+                const digit = isDigitHitOnly(i);
                 const vertHitRow = findVertHitForRow(i);
                 
                 if (exact) {
@@ -496,11 +528,18 @@
                         const diff = b - a;
                         const txt = diff > 0 ? `+${diff}` : `${diff}`;
                         dspan.textContent = txt;
-                        dspan.className = 'diff-badge horizontal-hit';
+                        if (digit) {
+                            dspan.className = 'diff-badge horizontal-hit';
+                            dspan.style.backgroundColor = '#c6f7d0';
+                            dspan.style.color = '#0a5e2e';
+                            dspan.style.borderTop = '2px solid #2c9a6e';
+                        } else {
+                            dspan.className = 'diff-badge horizontal-hit';
+                            dspan.style.backgroundColor = '#c6f7d0';
+                            dspan.style.color = '#0a5e2e';
+                            dspan.style.borderTop = '2px solid #2c9a6e';
+                        }
                         dspan.style.opacity = '1';
-                        dspan.style.backgroundColor = '#c6f7d0';
-                        dspan.style.color = '#0a5e2e';
-                        dspan.style.borderTop = '2px solid #2c9a6e';
                     }
                 } else {
                     dspan.textContent = '';
@@ -613,7 +652,6 @@
             }
             fullUpdate();
             
-            // Прокрутка таблицы наверх и фокус на первое поле ввода
             if (wrapper) {
                 wrapper.scrollTo({ top: 0, behavior: 'smooth' });
             }
